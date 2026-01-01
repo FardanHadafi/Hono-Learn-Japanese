@@ -6,17 +6,11 @@ import {
   boolean,
   index,
   uuid,
+  integer,
+  jsonb,
 } from "drizzle-orm/pg-core";
 
-export const scores = pgTable("scores", {
-  id: uuid().primaryKey().defaultRandom(),
-  userId: text("user_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
-  score: text("score").notNull(),
-});
-
-export const user = pgTable("user", {
+export const users = pgTable("user", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
@@ -43,7 +37,7 @@ export const session = pgTable(
     userAgent: text("user_agent"),
     userId: text("user_id")
       .notNull()
-      .references(() => user.id, { onDelete: "cascade" }),
+      .references(() => users.id, { onDelete: "cascade" }),
   },
   (table) => [index("session_userId_idx").on(table.userId)]
 );
@@ -56,7 +50,7 @@ export const account = pgTable(
     providerId: text("provider_id").notNull(),
     userId: text("user_id")
       .notNull()
-      .references(() => user.id, { onDelete: "cascade" }),
+      .references(() => users.id, { onDelete: "cascade" }),
     accessToken: text("access_token"),
     refreshToken: text("refresh_token"),
     idToken: text("id_token"),
@@ -88,21 +82,93 @@ export const verification = pgTable(
   (table) => [index("verification_identifier_idx").on(table.identifier)]
 );
 
-export const userRelations = relations(user, ({ many }) => ({
+export const questions = pgTable("questions", {
+  id: uuid().primaryKey().defaultRandom(),
+  question: text("question").notNull(),
+  options: jsonb("options").notNull(), // ["Option A", "Option B", "Option C", "Option D"]
+  correctAnswer: text("correct_answer").notNull(),
+  category: text("category"),
+  difficulty: text("difficulty"), // "easy", "medium", "hard"
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const scores = pgTable(
+  "scores",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    score: integer("score").notNull().default(0), // Total correct answers
+    totalQuestions: integer("total_questions").notNull().default(0),
+    percentage: integer("percentage").notNull().default(0),
+    timeTaken: integer("time_taken"), // in seconds
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("scores_userId_idx").on(table.userId),
+    index("scores_createdAt_idx").on(table.createdAt),
+  ]
+);
+
+export const userAnswers = pgTable(
+  "user_answers",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    scoreId: uuid("score_id")
+      .notNull()
+      .references(() => scores.id, { onDelete: "cascade" }),
+    questionId: uuid("question_id")
+      .notNull()
+      .references(() => questions.id, { onDelete: "cascade" }),
+    userAnswer: text("user_answer").notNull(),
+    isCorrect: boolean("is_correct").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("user_answers_scoreId_idx").on(table.scoreId),
+    index("user_answers_questionId_idx").on(table.questionId),
+  ]
+);
+
+export const userRelations = relations(users, ({ many }) => ({
   sessions: many(session),
   accounts: many(account),
 }));
 
 export const sessionRelations = relations(session, ({ one }) => ({
-  user: one(user, {
+  user: one(users, {
     fields: [session.userId],
-    references: [user.id],
+    references: [users.id],
   }),
 }));
 
 export const accountRelations = relations(account, ({ one }) => ({
-  user: one(user, {
+  user: one(users, {
     fields: [account.userId],
-    references: [user.id],
+    references: [users.id],
+  }),
+}));
+
+export const scoresRelations = relations(scores, ({ one, many }) => ({
+  user: one(users, {
+    fields: [scores.userId],
+    references: [users.id],
+  }),
+  userAnswers: many(userAnswers),
+}));
+
+export const questionRelations = relations(questions, ({ many }) => ({
+  userAnswers: many(userAnswers),
+}));
+
+export const userAnswersRelations = relations(userAnswers, ({ one }) => ({
+  score: one(scores, {
+    fields: [userAnswers.scoreId],
+    references: [scores.id],
+  }),
+  question: one(questions, {
+    fields: [userAnswers.questionId],
+    references: [questions.id],
   }),
 }));

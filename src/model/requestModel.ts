@@ -1,0 +1,83 @@
+// Sign Up
+export type SignUpRequest = {
+  name: string;
+  email: string;
+  password: string;
+  image?: string;
+  callbackURL?: string;
+  rememberMe?: boolean;
+};
+
+// Sign In
+export type SignInRequest = {
+  email: string;
+  password: string;
+  callbackURL?: string;
+  rememberMe?: boolean;
+};
+
+// Sign Out
+export type SignOutRequest = {};
+
+// Update User
+export type UpdateUserRequest = {
+  name?: string;
+  image?: string;
+};
+
+// Change Email
+export type ChangeEmailRequest = {
+  newEmail: string;
+  callbackURL?: string;
+};
+
+// Change Password
+export type ChangePasswordRequest = {
+  newPassword: string;
+  currentPassword: string;
+  revokeOtherSessions?: boolean;
+};
+
+// Reset Password
+export type ResetPasswordRequest = {
+  newPassword: string;
+  token?: string;
+};
+
+// Request Password Reset
+export type RequestPasswordResetRequest = {
+  email: string;
+  redirectTo?: string;
+};
+
+// Send Verification Email
+export type SendVerificationEmailRequest = {
+  email: string;
+  callbackURL?: string;
+};
+
+// Delete User
+export type DeleteUserRequest = {
+  callbackURL?: string;
+  password?: string;
+  token?: string;
+};
+
+// Revoke Session
+export type RevokeSessionRequest = {
+  token: string;
+};
+
+// Refresh Token
+export type RefreshTokenRequest = {
+  providerId: string;
+  accountId?: string;
+  userId?: string;
+};
+
+// Get Access Token
+export type GetAccessTokenRequest = {
+  providerId: string;
+  accountId?: string;
+  userId?: string;
+};
