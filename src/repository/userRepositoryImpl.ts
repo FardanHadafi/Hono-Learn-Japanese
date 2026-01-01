@@ -1,8 +1,8 @@
-import { User } from "@/model/userModel";
-import { UserRepository } from "./userRepository";
+import { eq } from "drizzle-orm";
 import { db } from "@/db/database";
 import { users } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { User } from "@/model/userModel";
+import { UserRepository } from "./userRepository";
 
 export class UserRepositoryImpl implements UserRepository {
   async Create(user: User): Promise<User> {
@@ -30,12 +30,18 @@ export class UserRepositoryImpl implements UserRepository {
           name: user.name,
           image: user.image ?? null,
           emailVerified: user.emailVerified,
-          updatedAt: user.updatedAt,
+          updatedAt: new Date(),
         })
         .where(eq(users.id, user.id))
         .returning();
 
       return this.toDomain(row);
+    });
+  }
+
+  async Delete(id: string): Promise<void> {
+    await db.transaction(async (tx) => {
+      await tx.delete(users).where(eq(users.id, id));
     });
   }
 
@@ -47,11 +53,7 @@ export class UserRepositoryImpl implements UserRepository {
         .where(eq(users.id, id))
         .limit(1);
 
-      if (!row) {
-        return null;
-      }
-
-      return this.toDomain(row);
+      return row ? this.toDomain(row) : null;
     });
   }
 
@@ -63,17 +65,19 @@ export class UserRepositoryImpl implements UserRepository {
         .where(eq(users.email, email))
         .limit(1);
 
-      if (!row) {
-        return null;
-      }
-
-      return this.toDomain(row);
+      return row ? this.toDomain(row) : null;
     });
   }
 
-  async Delete(id: string): Promise<void> {
-    await db.transaction(async (tx) => {
-      await tx.delete(users).where(eq(users.id, id));
+  async FindByName(name: string): Promise<User | null> {
+    return await db.transaction(async (tx) => {
+      const [row] = await tx
+        .select()
+        .from(users)
+        .where(eq(users.name, name))
+        .limit(1);
+
+      return row ? this.toDomain(row) : null;
     });
   }
 
