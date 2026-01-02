@@ -8,6 +8,14 @@ export type SignUpRequest = {
   rememberMe?: boolean;
 };
 
+// No password (Better-Auth)
+export type SignUpUserRequest = {
+  id: string; // IMPORTANT !, (Better-Auth need id)
+  name: string;
+  email: string;
+  image?: string;
+};
+
 // Sign In
 export type SignInRequest = {
   email: string;
@@ -18,6 +26,12 @@ export type SignInRequest = {
 
 // Sign Out
 export type SignOutRequest = {};
+
+// Update User Profile (Better-Auth)
+export type UpdateUserProfileRequest = {
+  name?: string;
+  image?: string;
+};
 
 // Update User
 export type UpdateUserRequest = {
