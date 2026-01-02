@@ -1,20 +1,20 @@
 import { eq } from "drizzle-orm";
 import { db } from "@/db/database";
-import { users } from "@/db/schema";
+import { user } from "@/db/schema";
 import { User } from "@/model/userModel";
 import { UserRepository } from "./userRepository";
 
 export class UserRepositoryImpl implements UserRepository {
-  async Create(user: User): Promise<User> {
+  async Create(data: User): Promise<User> {
     return await db.transaction(async (tx) => {
       const [row] = await tx
-        .insert(users)
+        .insert(user)
         .values({
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          emailVerified: user.emailVerified,
-          image: user.image ?? null,
+          id: data.id,
+          name: data.name,
+          email: data.email,
+          emailVerified: data.emailVerified,
+          image: data.image ?? null,
         })
         .returning();
 
@@ -22,17 +22,17 @@ export class UserRepositoryImpl implements UserRepository {
     });
   }
 
-  async Update(user: User): Promise<User> {
+  async Update(data: User): Promise<User> {
     return await db.transaction(async (tx) => {
       const [row] = await tx
-        .update(users)
+        .update(user)
         .set({
-          name: user.name,
-          image: user.image ?? null,
-          emailVerified: user.emailVerified,
+          name: data.name,
+          image: data.image ?? null,
+          emailVerified: data.emailVerified,
           updatedAt: new Date(),
         })
-        .where(eq(users.id, user.id))
+        .where(eq(user.id, user.id))
         .returning();
 
       return this.toDomain(row);
@@ -41,7 +41,7 @@ export class UserRepositoryImpl implements UserRepository {
 
   async Delete(id: string): Promise<void> {
     await db.transaction(async (tx) => {
-      await tx.delete(users).where(eq(users.id, id));
+      await tx.delete(user).where(eq(user.id, id));
     });
   }
 
@@ -49,8 +49,8 @@ export class UserRepositoryImpl implements UserRepository {
     return await db.transaction(async (tx) => {
       const [row] = await tx
         .select()
-        .from(users)
-        .where(eq(users.id, id))
+        .from(user)
+        .where(eq(user.id, id))
         .limit(1);
 
       return row ? this.toDomain(row) : null;
@@ -61,8 +61,8 @@ export class UserRepositoryImpl implements UserRepository {
     return await db.transaction(async (tx) => {
       const [row] = await tx
         .select()
-        .from(users)
-        .where(eq(users.email, email))
+        .from(user)
+        .where(eq(user.email, email))
         .limit(1);
 
       return row ? this.toDomain(row) : null;
@@ -73,15 +73,15 @@ export class UserRepositoryImpl implements UserRepository {
     return await db.transaction(async (tx) => {
       const [row] = await tx
         .select()
-        .from(users)
-        .where(eq(users.name, name))
+        .from(user)
+        .where(eq(user.name, name))
         .limit(1);
 
       return row ? this.toDomain(row) : null;
     });
   }
 
-  private toDomain(row: typeof users.$inferSelect): User {
+  private toDomain(row: typeof user.$inferSelect): User {
     return {
       id: row.id,
       name: row.name,

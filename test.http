@@ -1,1 +1,10 @@
-http://localhost:3000
+### SIGN UP USER
+POST http://localhost:3000/api/auth/sign-up/email
+Accept: application/json
+Content-Type: application/json
+
+{
+  "name": "testuser4",
+  "email": "testuser4@example.com",
+  "password": "testuser4password12345"
+}

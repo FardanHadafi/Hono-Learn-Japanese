@@ -6,11 +6,13 @@ import { sendEmail } from "./email";
 import { UserRepositoryImpl } from "@/repository/userRepositoryImpl";
 import { UserService } from "@/service/userService";
 import type { User as AuthUser } from "better-auth";
+import * as schema from "@/db/schema";
 
 export const auth = betterAuth({
   baseURL: process.env.AUTH_BASE_URL!,
   database: drizzleAdapter(db, {
     provider: "pg",
+    schema,
   }),
   emailAndPassword: {
     enabled: true,

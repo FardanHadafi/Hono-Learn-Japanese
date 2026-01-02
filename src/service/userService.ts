@@ -1,7 +1,6 @@
 import {
   SignUpUserRequest,
   UpdateUserProfileRequest,
-  UpdateUserRequest,
 } from "@/model/requestModel";
 import { User } from "@/model/userModel";
 import { UserRepository } from "@/repository/userRepository";

@@ -10,7 +10,7 @@ import {
   jsonb,
 } from "drizzle-orm/pg-core";
 
-export const users = pgTable("user", {
+export const user = pgTable("user", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
@@ -37,7 +37,7 @@ export const session = pgTable(
     userAgent: text("user_agent"),
     userId: text("user_id")
       .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
+      .references(() => user.id, { onDelete: "cascade" }),
   },
   (table) => [index("session_userId_idx").on(table.userId)]
 );
@@ -50,7 +50,7 @@ export const account = pgTable(
     providerId: text("provider_id").notNull(),
     userId: text("user_id")
       .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
+      .references(() => user.id, { onDelete: "cascade" }),
     accessToken: text("access_token"),
     refreshToken: text("refresh_token"),
     idToken: text("id_token"),
@@ -98,7 +98,7 @@ export const scores = pgTable(
     id: uuid().primaryKey().defaultRandom(),
     userId: text("user_id")
       .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
+      .references(() => user.id, { onDelete: "cascade" }),
     score: integer("score").notNull().default(0), // Total correct answers
     totalQuestions: integer("total_questions").notNull().default(0),
     percentage: integer("percentage").notNull().default(0),
@@ -131,29 +131,29 @@ export const userAnswers = pgTable(
   ]
 );
 
-export const userRelations = relations(users, ({ many }) => ({
+export const userRelations = relations(user, ({ many }) => ({
   sessions: many(session),
   accounts: many(account),
 }));
 
 export const sessionRelations = relations(session, ({ one }) => ({
-  user: one(users, {
+  user: one(user, {
     fields: [session.userId],
-    references: [users.id],
+    references: [user.id],
   }),
 }));
 
 export const accountRelations = relations(account, ({ one }) => ({
-  user: one(users, {
+  user: one(user, {
     fields: [account.userId],
-    references: [users.id],
+    references: [user.id],
   }),
 }));
 
 export const scoresRelations = relations(scores, ({ one, many }) => ({
-  user: one(users, {
+  user: one(user, {
     fields: [scores.userId],
-    references: [users.id],
+    references: [user.id],
   }),
   userAnswers: many(userAnswers),
 }));
