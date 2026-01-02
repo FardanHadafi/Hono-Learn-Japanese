@@ -4,7 +4,42 @@ Accept: application/json
 Content-Type: application/json
 
 {
-  "name": "testuser4",
-  "email": "testuser4@example.com",
-  "password": "testuser4password12345"
+  "name": "testuser1",
+  "email": "testuser1@example.com",
+  "password": "testuser1password12345"
 }
+
+### SIGN IN USER
+
+POST http://localhost:3000/api/auth/sign-in/email
+Accept: application/json
+Content-Type: application/json
+
+{
+  "email": "testuser1@example.com",
+  "password": "testuser1password12345"
+}
+
+### UPDATE USER
+PATCH http://localhost:3000/api/users/me
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer OGhXfSMoEMvnzShxptJEfbnJqXjIVLBF
+
+{
+  "name": "updatedtestuser1"
+}
+
+### GET USER
+GET http://localhost:3000/api/users/me
+Accept: application/json
+Authorization: Bearer OGhXfSMoEMvnzShxptJEfbnJqXjIVLBF
+
+### LOGOUT USER
+POST http://localhost:3000/api/auth/sign-out
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer OGhXfSMoEMvnzShxptJEfbnJqXjIVLBF
+Origin: http://localhost:3000
+
+{}
