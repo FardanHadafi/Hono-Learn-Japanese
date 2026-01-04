@@ -1,8 +1,21 @@
 import { Hono } from "hono";
 import { auth } from "./lib/auth";
 import { userController } from "./controller/userController";
+import { cors } from "hono/cors";
 
 const app = new Hono();
+
+app.use(
+  "/*",
+  cors({
+    origin: "http://localhost:5173",
+    allowHeaders: ["Content-Type", "Authorization"],
+    allowMethods: ["POST", "GET", "OPTIONS", "PUT", "DELETE"],
+    exposeHeaders: ["Content-Length"],
+    maxAge: 600,
+    credentials: true,
+  })
+);
 
 app.on(["POST", "GET"], "/api/auth/*", (c) => auth.handler(c.req.raw));
 
