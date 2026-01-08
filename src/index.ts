@@ -17,6 +17,18 @@ app.use(
   })
 );
 
+app.get("/api/auth/get-session", async (c) => {
+  const session = await auth.api.getSession({
+    headers: c.req.raw.headers,
+  });
+
+  if (!session) {
+    return c.json({ session: null, user: null }, 401);
+  }
+
+  return c.json(session);
+});
+
 app.on(["POST", "GET"], "/api/auth/*", (c) => auth.handler(c.req.raw));
 
 app.route("/api/users", userController);
