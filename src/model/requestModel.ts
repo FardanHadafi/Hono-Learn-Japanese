@@ -1,3 +1,5 @@
+import { JLPTLevel, LearningGroup, ScriptType } from "./Enums";
+
 // Sign Up
 export type SignUpRequest = {
   name: string;
@@ -80,6 +82,25 @@ export type DeleteUserRequest = {
 // Revoke Session
 export type RevokeSessionRequest = {
   token: string;
+};
+
+// Start Learning Request
+export type StartLearningSessionRequest = {
+  scriptType: ScriptType;
+  jlptLevel: JLPTLevel;
+  group: LearningGroup;
+};
+
+// Submit Learning Answer Request
+export type SubmitLearningAnswerRequest = {
+  sessionId: string;
+  prompt: string;
+  userAnswer: string;
+};
+
+// Finish Learning Session Request
+export type FinishLearningSessionRequest = {
+  sessionId: string;
 };
 
 // Refresh Token

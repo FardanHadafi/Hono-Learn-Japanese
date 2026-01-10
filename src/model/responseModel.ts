@@ -1,3 +1,9 @@
+import {
+  JLPTLevel,
+  LearningGroup,
+  LearningQuestion,
+  ScriptType,
+} from "./Enums";
 import { Session } from "./sessionModel";
 import { User } from "./userModel";
 
@@ -70,6 +76,48 @@ export type SendVerificationEmailResponse = {
 export type DeleteUserResponse = {
   success: boolean;
   message: "User deleted" | "Verification email sent";
+};
+
+// Start Learning Response
+export type StartLearningSessionResponse = {
+  sessionId: string;
+  totalQuestions: number; // always 10
+  currentIndex: number; // starts from 1
+  question: LearningQuestion;
+};
+
+// Submit Learning Asnwer Response
+export type SubmitLearningAnswerResponse = {
+  isCorrect: boolean;
+  correctAnswer: string;
+  nextQuestion?: LearningQuestion;
+  currentIndex: number;
+  isSessionFinished: boolean;
+};
+
+// Learning Progress Response
+export type LearningProgressResponse = {
+  scriptType: ScriptType;
+  jlptLevel: JLPTLevel;
+  group: LearningGroup;
+
+  completed: boolean;
+  bestAccuracy: number;
+};
+
+// Finish Learning Session Response
+export type FinishLearningSessionResponse = {
+  totalQuestions: number;
+  correctCount: number;
+  wrongCount: number;
+  accuracy: number;
+  passed: boolean;
+
+  nextAction:
+    | "repeat-group"
+    | "next-group"
+    | "unlock-katakana"
+    | "unlock-kanji";
 };
 
 // List Sessions Response
@@ -148,4 +196,13 @@ export type OkResponse = {
 // Erorr Response
 export type ErrorResponse = {
   message: string;
+};
+
+export type LearningErrorResponse = {
+  message: string;
+  code:
+    | "SESSION_NOT_FOUND"
+    | "SESSION_FINISHED"
+    | "INVALID_ANSWER"
+    | "GROUP_LOCKED";
 };

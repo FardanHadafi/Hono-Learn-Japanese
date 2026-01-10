@@ -114,20 +114,94 @@ export const scores = pgTable(
 export const userAnswers = pgTable(
   "user_answers",
   {
-    id: uuid().primaryKey().defaultRandom(),
-    scoreId: uuid("score_id")
+    id: uuid("id").primaryKey().defaultRandom(),
+
+    sessionId: uuid("session_id")
       .notNull()
-      .references(() => scores.id, { onDelete: "cascade" }),
-    questionId: uuid("question_id")
-      .notNull()
-      .references(() => questions.id, { onDelete: "cascade" }),
+      .references(() => learningSessions.id, { onDelete: "cascade" }),
+
+    prompt: text("prompt").notNull(),
+    // あ | カ | 水
+
+    options: jsonb("options").notNull(),
+    // ["a","i","u","e","o"]
+
+    correctAnswer: text("correct_answer").notNull(),
     userAnswer: text("user_answer").notNull(),
+
     isCorrect: boolean("is_correct").notNull(),
+
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
+  (table) => [index("user_answers_sessionId_idx").on(table.sessionId)]
+);
+
+export const learningSessions = pgTable(
+  "learning_sessions",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+
+    scriptType: text("script_type").notNull(),
+    // hiragana | katakana | kanji
+
+    jlptLevel: text("jlpt_level").notNull(),
+    // N5 | N4
+
+    group: text("group").notNull(),
+    // a-row, ka-row, basic-kanji, etc
+
+    totalQuestions: integer("total_questions").notNull().default(10),
+
+    correctCount: integer("correct_count").notNull().default(0),
+
+    wrongCount: integer("wrong_count").notNull().default(0),
+
+    accuracy: integer("accuracy").notNull().default(0),
+
+    passed: boolean("passed").notNull().default(false),
+
+    startedAt: timestamp("started_at").defaultNow().notNull(),
+
+    finishedAt: timestamp("finished_at"),
+  },
   (table) => [
-    index("user_answers_scoreId_idx").on(table.scoreId),
-    index("user_answers_questionId_idx").on(table.questionId),
+    index("learning_sessions_userId_idx").on(table.userId),
+    index("learning_sessions_scriptType_idx").on(table.scriptType),
+  ]
+);
+
+export const userProgress = pgTable(
+  "user_progress",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+
+    scriptType: text("script_type").notNull(),
+    // hiragana | katakana | kanji
+
+    jlptLevel: text("jlpt_level").notNull(),
+
+    group: text("group").notNull(),
+
+    completed: boolean("completed").notNull().default(false),
+
+    bestAccuracy: integer("best_accuracy").notNull().default(0),
+
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    index("user_progress_userId_idx").on(table.userId),
+    index("user_progress_script_idx").on(table.scriptType),
   ]
 );
 
@@ -160,15 +234,4 @@ export const scoresRelations = relations(scores, ({ one, many }) => ({
 
 export const questionRelations = relations(questions, ({ many }) => ({
   userAnswers: many(userAnswers),
-}));
-
-export const userAnswersRelations = relations(userAnswers, ({ one }) => ({
-  score: one(scores, {
-    fields: [userAnswers.scoreId],
-    references: [scores.id],
-  }),
-  question: one(questions, {
-    fields: [userAnswers.questionId],
-    references: [questions.id],
-  }),
 }));
