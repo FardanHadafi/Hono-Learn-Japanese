@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { auth } from "./lib/auth";
 import { userController } from "./controller/userController";
 import { cors } from "hono/cors";
+import { learningController } from "./controller/learningController";
 
 const app = new Hono();
 
@@ -32,6 +33,7 @@ app.get("/api/auth/get-session", async (c) => {
 app.on(["POST", "GET"], "/api/auth/*", (c) => auth.handler(c.req.raw));
 
 app.route("/api/users", userController);
+app.route("/learning", learningController);
 
 app.get("/", (c) => {
   return c.text("Hello Hono!");

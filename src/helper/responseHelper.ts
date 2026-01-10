@@ -134,3 +134,13 @@ export function validateSignInRequest(request: SignInRequest): {
 
   return { valid: true };
 }
+
+export function isKanaScript(
+  scriptType: string
+): scriptType is "hiragana" | "katakana" {
+  return scriptType === "hiragana" || scriptType === "katakana";
+}
+
+export function jlptLevel(jlptLevel: string): jlptLevel is "N5" | "N4" {
+  return jlptLevel === "N5" || jlptLevel === "N4";
+}

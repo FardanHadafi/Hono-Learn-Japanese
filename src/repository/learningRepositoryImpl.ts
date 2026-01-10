@@ -8,8 +8,11 @@ import { LearningRepository } from "./learningRepository";
 import { db } from "@/db/database";
 import { learningSessions, userAnswers, userProgress } from "@/db/schema";
 import { eq, sql } from "drizzle-orm";
+import { NodePgDatabase } from "drizzle-orm/node-postgres";
+import * as schema from "@/db/schema";
 
 export class LearningRepositoryImpl implements LearningRepository {
+  constructor(private readonly db: NodePgDatabase<typeof schema>) {}
   async createSession(data: NewLearningSession): Promise<LearningSession> {
     return await db.transaction(async (tx) => {
       const [session] = await tx

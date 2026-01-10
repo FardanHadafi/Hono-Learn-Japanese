@@ -96,6 +96,8 @@ export type SubmitLearningAnswerRequest = {
   sessionId: string;
   prompt: string;
   userAnswer: string;
+  options: string[];
+  correctAnswer: string;
 };
 
 // Finish Learning Session Request

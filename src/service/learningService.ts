@@ -68,9 +68,7 @@ export class LearningService {
     );
 
     if (!session || session.userId !== userId) {
-      throw new HTTPException(404, {
-        message: "Learning session not found",
-      });
+      throw new HTTPException(404, { message: "Learning session not found" });
     }
 
     if (session.finishedAt) {
@@ -79,62 +77,19 @@ export class LearningService {
       });
     }
 
-    if (session.scriptType === "kanji") {
-      throw new HTTPException(400, {
-        message: "Kanji learning not supported yet",
-      });
-    }
-
-    function isKanaScript(
-      scriptType: string
-    ): scriptType is "hiragana" | "katakana" {
-      return scriptType === "hiragana" || scriptType === "katakana";
-    }
-
-    if (!isKanaScript(session.scriptType)) {
-      throw new HTTPException(400, {
-        message: "Kanji learning not supported yet",
-      });
-    }
-
-    function jlptLevel(jlptLevel: string): jlptLevel is "N5" | "N4" {
-      return jlptLevel === "N5" || jlptLevel === "N4";
-    }
-
-    if (!jlptLevel(session.jlptLevel)) {
-      throw new HTTPException(400, {
-        message: "N3 learning not supported yet",
-      });
-    }
-
-    const items = this.kanaProvider.getItems(
-      session.scriptType,
-      session.jlptLevel,
-      session.group
-    );
-
-    const item = items.find((i: KanaItem) => i.kana === request.prompt);
-
-    if (!item) {
-      throw new HTTPException(400, {
-        message: "Invalid learning prompt",
-      });
-    }
-
-    const correctAnswer = item.romaji;
-    const isCorrect = request.userAnswer === correctAnswer;
+    const isCorrect = request.userAnswer === request.correctAnswer;
 
     await this.learningRepository.saveAnswer({
-      sessionId: request.sessionId,
+      sessionId: session.id,
       prompt: request.prompt,
-      options: [],
-      correctAnswer,
+      options: request.options,
+      correctAnswer: request.correctAnswer,
       userAnswer: request.userAnswer,
       isCorrect,
     });
 
     const { correct, wrong } = await this.learningRepository.countAnswer(
-      request.sessionId
+      session.id
     );
 
     const answered = correct + wrong;
@@ -142,7 +97,7 @@ export class LearningService {
     if (answered >= session.totalQuestions) {
       return {
         isCorrect,
-        correctAnswer,
+        correctAnswer: request.correctAnswer,
         currentIndex: answered,
         isSessionFinished: true,
       };
@@ -150,10 +105,9 @@ export class LearningService {
 
     return {
       isCorrect,
-      correctAnswer,
+      correctAnswer: request.correctAnswer,
       currentIndex: answered + 1,
       isSessionFinished: false,
-      nextQuestion: this.createQuestion(items),
     };
   }
 
@@ -206,6 +160,29 @@ export class LearningService {
       accuracy,
       passed,
       nextAction: passed ? "next-group" : "repeat-group",
+    };
+  }
+
+  async getSessionResult(userId: string, sessionId: string) {
+    const session = await this.learningRepository.findSessionById(sessionId);
+
+    if (!session || session.userId !== userId) {
+      throw new HTTPException(404, { message: "Session not found" });
+    }
+
+    if (!session.finishedAt) {
+      throw new HTTPException(409, {
+        message: "Session not finished yet",
+      });
+    }
+
+    return {
+      totalQuestions: session.totalQuestions,
+      correctCount: session.correctCount,
+      wrongCount: session.wrongCount,
+      accuracy: session.accuracy,
+      passed: session.passed,
+      nextAction: session.passed ? "next-group" : "repeat-group",
     };
   }
 
