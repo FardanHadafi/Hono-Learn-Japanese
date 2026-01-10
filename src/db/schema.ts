@@ -82,16 +82,6 @@ export const verification = pgTable(
   (table) => [index("verification_identifier_idx").on(table.identifier)]
 );
 
-export const questions = pgTable("questions", {
-  id: uuid().primaryKey().defaultRandom(),
-  question: text("question").notNull(),
-  options: jsonb("options").notNull(), // ["Option A", "Option B", "Option C", "Option D"]
-  correctAnswer: text("correct_answer").notNull(),
-  category: text("category"),
-  difficulty: text("difficulty"), // "easy", "medium", "hard"
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
-
 export const scores = pgTable(
   "scores",
   {
@@ -208,6 +198,8 @@ export const userProgress = pgTable(
 export const userRelations = relations(user, ({ many }) => ({
   sessions: many(session),
   accounts: many(account),
+  learningSessions: many(learningSessions),
+  progress: many(userProgress),
 }));
 
 export const sessionRelations = relations(session, ({ one }) => ({
@@ -232,6 +224,27 @@ export const scoresRelations = relations(scores, ({ one, many }) => ({
   userAnswers: many(userAnswers),
 }));
 
-export const questionRelations = relations(questions, ({ many }) => ({
-  userAnswers: many(userAnswers),
+export const learningSessionRelations = relations(
+  learningSessions,
+  ({ one, many }) => ({
+    user: one(user, {
+      fields: [learningSessions.userId],
+      references: [user.id],
+    }),
+    answers: many(userAnswers),
+  })
+);
+
+export const userAnswersRelations = relations(userAnswers, ({ one }) => ({
+  session: one(learningSessions, {
+    fields: [userAnswers.sessionId],
+    references: [learningSessions.id],
+  }),
+}));
+
+export const userProgressRelations = relations(userProgress, ({ one }) => ({
+  user: one(user, {
+    fields: [userProgress.userId],
+    references: [user.id],
+  }),
 }));
